@@ -70,7 +70,36 @@ app.post('/auth/login', async (req, res) => {
     });
 });
 
+//==================================
+//Public (Endpoint)
+//==================================
+app.get('/public/info', (req, res) => {
+    // Returns 200 with a welcome message
+    res.status(200).json({ message: "Welcome stranger! This info is public." });
+});
 
+//==================================
+//Protected (Endpoint)
+//==================================
+
+app.get('/protected/profile', (req, res) => {
+    // Extract the token from the header
+    const authHeader = req.headers.authorization;
+
+    // If the header is missing, malformed, or has no token, immediately return 401
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: "Access token required" });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: "Access token required" });
+    }
+
+    // You're not verifying the token yet - just checking one was presented
+    res.status(200).json({ message: "Token received! (Verification pending in Stage 3)" });
+});
 
 // Start Server
 const PORT = process.env.PORT || 3000;
