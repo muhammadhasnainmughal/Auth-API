@@ -79,14 +79,14 @@ app.get('/public/info', (req, res) => {
 });
 
 //==================================
-//Protected (Endpoint)
+//Protected (Endpoint) with token verify
 //==================================
 
-app.get('/protected/profile', (req, res) => {
-    // Extract the token from the header
+app.get('/protected/profile', async (req, res) => {
+
+    // 1. Extract the token from the header
     const authHeader = req.headers.authorization;
 
-    // If the header is missing, malformed, or has no token, immediately return 401
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: "Access token required" });
     }
@@ -97,8 +97,20 @@ app.get('/protected/profile', (req, res) => {
         return res.status(401).json({ error: "Access token required" });
     }
 
-    // You're not verifying the token yet - just checking one was presented
-    res.status(200).json({ message: "Token received! (Verification pending in Stage 3)" });
+    // 2. Ask Supabase whether it's real (Network call)
+    const { data, error } = await supabase.auth.getUser(token);
+
+    // 3. If the token is expired, tampered with, or invalid -> return 401
+    if (error || !data.user) {
+        return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    // 4. If it verifies -> return 200 with the user's safe metadata
+    res.status(200).json({
+        id: data.user.id,
+        email: data.user.email,
+        created_at: data.user.created_at
+    });
 });
 
 // Start Server
