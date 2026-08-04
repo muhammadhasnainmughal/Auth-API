@@ -2,8 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 
+//swagger UI
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./openapi.json');
+
 const app = express();
 app.use(express.json());
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Initialize Supabase Client
 const supabaseUrl = process.env.SUPABASE_URL;
